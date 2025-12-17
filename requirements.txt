@@ -1,11 +1,23 @@
-sentence-transformers==2.2.2
-langchain
+# Core
 flask
-pypdf
 python-dotenv
-pinecone[grpc]
-langchain-pinecone
-langchain-openai
-langchain-community
-langchain_experimental
--e.
+pypdf
+
+# Embeddings (PINNED + DEPENDENCIES)
+sentence-transformers==2.2.2
+huggingface-hub==0.14.1
+transformers==4.30.2
+
+# LangChain (PINNED & COMPATIBLE)
+langchain==0.1.16
+langchain-community==0.0.36
+langchain-openai==0.1.3
+langchain-pinecone==0.0.3
+langchain-experimental==0.0.55
+langchain-google-genai
+
+# Vector DB
+pinecone-client==3.0.2
+
+# Local project
+-e .
