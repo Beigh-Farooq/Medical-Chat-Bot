@@ -1,58 +1,58 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Medical Chatbot</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Information Assist</title>
 
-    <!-- Bootstrap & Icons -->
+    <!-- Bootstrap -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
-    <!-- ===== MAIN BODY ===== -->
+
+<!-- MAIN PAGE CONTENT -->
 <div class="main-content">
-    <h1>🩺 Medical Information Assistant</h1>
-    <p>
-        Get general medical information based on trusted medical documents.
-        This chatbot is designed to help you understand symptoms and conditions.
-    </p>
+    <h1><i class="fa-solid fa-stethoscope"></i> Medical Information <span class="assistant-word">Assist</span></h1>
+    <p>Get general medical information based on trusted medical documents.</p>
     <p class="disclaimer">
         ⚠ This chatbot does not replace professional medical advice.
         Always consult a qualified healthcare professional.
     </p>
 </div>
 
-<!-- Floating Chat Icon -->
+<!-- Floating Chat Button -->
 <div id="chat-toggle">
-    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png">
-    <div class="chat-tooltip">How can I help?</div>
+    <i class="fa-solid fa-comments"></i>
+    <div class="help-tooltip">How can I help you?</div>
 </div>
 
-<!-- Chat Window -->
+<!-- CHAT OVERLAY -->
+<div class="chat-overlay" id="chat-overlay"></div>
+
+<!-- Chat Popup -->
 <div class="chat-popup" id="chat-popup">
     <div class="card">
         <div class="card-header msg_head">
             <div class="d-flex align-items-center">
-                <img src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png" class="rounded-circle user_img">
+                <i class="fa-solid fa-user-doctor bot-icon"></i>
                 <div class="user_info">
-                    <span>Medical Assistant</span>
-                    <p>Ask health-related questions</p>
+                    <span>Medical <span class="assistant-word">Assist</span></span>
                 </div>
-                <span class="close-btn ml-auto">&times;</span>
             </div>
+            <span class="close-btn">&times;</span>
         </div>
 
         <div id="messageFormeight" class="card-body msg_card_body">
             <div class="bot-intro">
-                <h6>👩‍⚕️ Medical Information Chatbot</h6>
-                <p>
-                    I provide general medical information based on trusted documents.
-                    Always consult a qualified doctor for medical advice.
-                </p>
+                👩‍⚕️ Hello! Ask me health related questions
             </div>
         </div>
 
@@ -60,12 +60,12 @@
             <form id="messageArea" class="input-group">
                 <input type="text" id="text" name="msg"
                        placeholder="Type your message..."
-                       autocomplete="off"
                        class="form-control type_msg"
+                       autocomplete="off"
                        required />
                 <div class="input-group-append">
-                    <button type="submit" class="input-group-text send_btn">
-                        <i class="fas fa-paper-plane"></i>
+                    <button type="submit" class="send_btn">
+                        <i class="fa-solid fa-paper-plane"></i>
                     </button>
                 </div>
             </form>
@@ -73,24 +73,66 @@
     </div>
 </div>
 
-<!-- JS -->
 <script>
 $(document).ready(function () {
 
-    // Toggle chat open
+    let tooltipInterval;
+
+    function startTooltip() {
+        tooltipInterval = setInterval(() => {
+            $(".help-tooltip").fadeIn(500).delay(1200).fadeOut(500);
+        }, 2500);
+    }
+
+    function stopTooltip() {
+        clearInterval(tooltipInterval);
+        $(".help-tooltip").hide();
+    }
+
+    startTooltip();
+
     $("#chat-toggle").click(function () {
-        $("#chat-popup").fadeIn();
-        $(".chat-tooltip").hide();
+        $("#chat-popup").addClass("open");
+        $("#chat-overlay").addClass("show");
+        if ($(window).width() > 768) {
+            $("body").addClass("no-scroll");
+        }
+        stopTooltip();
     });
 
-    // Close chat
-    $(".close-btn").click(function () {
-        $("#chat-popup").fadeOut();
-        $(".chat-tooltip").fadeIn();
+    $(".close-btn, #chat-overlay").click(function () {
+        $("#chat-popup").removeClass("open");
+        $("#chat-overlay").removeClass("show");
+        $("body").removeClass("no-scroll");
+        startTooltip();
     });
 
     function scrollToBottom() {
-        $("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
+        const box = $("#messageFormeight")[0];
+        box.scrollTop = box.scrollHeight;
+    }
+
+    function showTyping() {
+        $("#messageFormeight").append(`
+            <div id="typing" class="msg bot-msg typing">
+                <span></span><span></span><span></span>
+            </div>
+        `);
+        scrollToBottom();
+    }
+
+    function removeTyping() {
+        $("#typing").remove();
+    }
+
+    function typeText(element, text, speed = 18) {
+        let i = 0;
+        const interval = setInterval(() => {
+            element.text(element.text() + text.charAt(i));
+            i++;
+            scrollToBottom();
+            if (i >= text.length) clearInterval(interval);
+        }, speed);
     }
 
     $("#messageArea").on("submit", function (event) {
@@ -99,35 +141,20 @@ $(document).ready(function () {
         const rawText = $("#text").val();
         $("#text").val("");
 
-        const userHtml = `
-        <div class="d-flex justify-content-end mb-3">
-            <div class="msg_cotainer_send">${rawText}</div>
-        </div>`;
-        $("#messageFormeight").append(userHtml);
+        $("#messageFormeight").append(`<div class="msg user-msg">${rawText}</div>`);
         scrollToBottom();
 
-        const typingHtml = `
-        <div id="typing" class="d-flex justify-content-start mb-3">
-            <div class="typing-indicator">
-                <span></span><span></span><span></span>
-            </div>
-        </div>`;
-        $("#messageFormeight").append(typingHtml);
-        scrollToBottom();
+        showTyping();
 
         $.ajax({
             type: "POST",
             url: "/get",
             data: { msg: rawText },
         }).done(function (data) {
-            $("#typing").remove();
-
-            const botHtml = `
-            <div class="d-flex justify-content-start mb-3">
-                <div class="msg_cotainer">${data}</div>
-            </div>`;
-            $("#messageFormeight").append(botHtml);
-            scrollToBottom();
+            removeTyping();
+            const botMsg = $('<div class="msg bot-msg"></div>');
+            $("#messageFormeight").append(botMsg);
+            typeText(botMsg, data);
         });
     });
 });
