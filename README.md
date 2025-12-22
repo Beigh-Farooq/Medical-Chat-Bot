@@ -16,6 +16,13 @@ source conda activate medibot
 
 source pip install -r requirements.txt
 
+## STEP 03 Run APP
+source python app.py
+
+## steup env file 
+PINECONE_API_KEY="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+GOOGLE_API_KEY="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
 
 
 
